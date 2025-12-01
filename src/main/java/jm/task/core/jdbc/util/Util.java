@@ -7,6 +7,8 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.service.ServiceRegistry;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -16,16 +18,35 @@ import java.util.logging.Logger;
 public class Util {
     private static final Logger logger = Logger.getLogger(Util.class.getName());
 
-    private static final String URL = "jdbc:mysql://localhost:3306/test";
-    private static final String USER = "root";
-    private static final String PASSWORD = "Kilbas1309861";
+    private final  static Properties prop = new Properties();
+
+    static {
+        try (InputStream is = Util.class
+                .getClassLoader()
+                .getResourceAsStream("application.properties")) {
+
+            if (is == null) {
+                throw new IllegalStateException(
+                        "Файл application.properties не найден в classpath");
+            }
+
+            prop.load(is);
+        } catch (IOException e) {
+            throw new ExceptionInInitializerError("Не удалось загрузить настройки БД: " + e.getMessage());
+        }
+    }
+
+    private static final String URL = prop.getProperty("db.url");
+    private static final String USER = prop.getProperty("db.username");
+    private static final String PASSWORD =  prop.getProperty("db.password");
     private static SessionFactory sessionFactory;
+
 
     private Util() {
     }
 
     public static Connection getConnection() {
-        Connection connect = null;
+        Connection connect;
         try {
             connect = DriverManager.getConnection(URL, USER, PASSWORD);
             logger.info("\nПодключение БД: Успешно!");

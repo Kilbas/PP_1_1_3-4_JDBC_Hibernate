@@ -118,6 +118,5 @@ public class UserDaoHibernateImpl implements UserDao {
         }finally {
             session.close();
         }
-
     }
 }
